@@ -5,7 +5,7 @@ const process = require('child_process');
 const bodyparser = require('koa-bodyparser')()
 const json = require('koa-json');
 const app = new Koa();
-var token = '123';
+var token = 'sha1=21afd03........';
 
 app.use(convert(json()));
 app.use(convert(bodyparser));
@@ -16,8 +16,8 @@ var execShell = function (){process.execFile('../update.sh',null,null,
 }
 
 router.post('/hook', (ctx, next)=> {//根路由
-    if(ctx.request.body){
-        if(ctx.request.body.token==token){
+    if(ctx.request.headers['x-hub-signature']){
+        if(ctx.request.headers['x-hub-signature']==token){
             execShell();
             ctx.body = '{msg:"success"}';
         }else{
