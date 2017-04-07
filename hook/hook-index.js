@@ -1,6 +1,6 @@
 var http = require('http')
 var createHandler = require('github-webhook-handler')
-var handler = createHandler({ path: '/webhook', secret: '123' })
+var handler = createHandler({ path: '/webhook', secret: '.lailake' })
 
 function run_cmd(cmd, args, callback) {
     var spawn = require('child_process').spawn;
