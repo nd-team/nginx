@@ -12,7 +12,6 @@
     "child_process": "^1.0.2",
     "github-webhook-handler": "^0.6.0",
     "koa": "^2.2.0",
-    "koa-bodyparser": "^4.2.0",
     "koa-convert": "^1.2.0",
     "koa-json": "^2.0.2",
     "koa-router": "^7.1.1"
