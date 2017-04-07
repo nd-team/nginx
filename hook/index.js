@@ -1,6 +1,6 @@
 var http = require('http')
 var createHandler = require('github-webhook-handler')
-var handler = createHandler({ path: '/webhook', secret: 'lailake' })
+var handler = createHandler({ path: '/webhook', secret: '123' })
 
 function run_cmd(cmd, args, callback) {
     var spawn = require('child_process').spawn;
@@ -32,7 +32,7 @@ handler.on('push', function (event) {
     console.log('Received a push event for %s to %s',
         event.payload.repository.name,
         event.payload.ref)
-    run_cmd('sh', ['../update.sh', event.payload.repository.name], function (text) {
+    run_cmd('sh', ['../nginx-restart.sh', event.payload.repository.name], function (text) {
         console.log(text)
     });
 })
