@@ -1,36 +1,46 @@
-const Koa = require('koa');
-const router = require("koa-router")();//路由中间件
-const convert = require("koa-convert");//路由中间件
-const process = require('child_process');
-const bodyparser = require('koa-bodyparser')()
-const json = require('koa-json');
-const app = new Koa();
-var token = 'sha1=21afd03........';
+var http = require('http')
+var createHandler = require('github-webhook-handler')
+var handler = createHandler({ path: '/webhook', secret: 'lailake' })
 
-app.use(convert(json()));
-app.use(convert(bodyparser));
-var execShell = function (){process.execFile('../update.sh',null,null,
-  function (error, stdout, stderr) {
-        console.log(stderr)
-	});
+function run_cmd(cmd, args, callback) {
+    var spawn = require('child_process').spawn;
+    var child = spawn(cmd, args);
+    var resp = "";
+
+    child.stdout.on('data', function (buffer) {
+        resp += buffer.toString();
+    });
+    child.stdout.on('end', function () {
+        callback(resp)
+    });
 }
 
-router.post('/hook', (ctx, next)=> {//根路由
-    if(ctx.request.headers['x-hub-signature']){
-        if(ctx.request.headers['x-hub-signature']==token){
-            execShell();
-            ctx.body = '{msg:"success"}';
-        }else{
-            ctx.body = '{msg:"error"}';
-            ctx.status = 500;
-        }
-    }else{
-        ctx.body = '{msg:"error"}';
-        ctx.status = 500;
-    }
+http.createServer(function (req, res) {
+    handler(req, res, function (err) {
+        res.statusCode = 404
+        res.end('no such location')
+    })
+}).listen(8088,function () {
+    console.log('webhook启动成功');
+})
 
-});
+handler.on('error', function (err) {
+    console.error('Error:', err.message)
+})
 
-app.use(convert(router.routes()));
-app.listen(8088);
+handler.on('push', function (event) {
+    console.log('Received a push event for %s to %s',
+        event.payload.repository.name,
+        event.payload.ref)
+    run_cmd('sh', ['../update.sh', event.payload.repository.name], function (text) {
+        console.log(text)
+    });
+})
 
+handler.on('issues', function (event) {
+    console.log('Received an issue event for %s action=%s: #%d %s',
+        event.payload.repository.name,
+        event.payload.action,
+        event.payload.issue.number,
+        event.payload.issue.title)
+})
